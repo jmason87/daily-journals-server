@@ -22,11 +22,11 @@ INSERT INTO `Moods` VALUES (null, "Sad");
 INSERT INTO `Moods` VALUES (null, "Angry");
 INSERT INTO `Moods` VALUES (null, "Ok");
 
-SELECT
-    e.id,
-    e.concept,
-    e.entry,
-    e.date,
-    e.mood_id
-FROM Entries e
-
+        SELECT
+            e.id,
+            e.concept,
+            e.entry,
+            e.date,
+            e.mood_id,
+        FROM Entries e
+        WHERE e.id = ?
