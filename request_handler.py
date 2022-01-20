@@ -1,6 +1,8 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from views import get_all_entries, get_single_entry
 from views import delete_entry
+from views import search_entries
+from views import get_all_moods, get_single_mood
 
 
 # Here's a class. It inherits from another class.
@@ -16,6 +18,12 @@ class HandleRequests(BaseHTTPRequestHandler):
         path_params = path.split("/")
         resource = path_params[1]
         id = None
+        
+        if '?' in resource:
+            param = resource.split('?')[1]
+            resource = resource.split('?')[0]
+            value = param.split('=')[1]
+            return (resource, id, value)
 
         # Try to get the item at index 2
         try:
@@ -68,18 +76,32 @@ class HandleRequests(BaseHTTPRequestHandler):
 
         # Your new console.log() that outputs to the terminal
         response = {}
-        (resource, id) = self.parse_url(self.path)
+        parsed = self.parse_url(self.path)
 
         # It's an if..else statement
-        if resource == "entries":
-            if id is not None:
-                response = f"{get_single_entry(id)}"
-            else:
-                response = f"{get_all_entries()}"
+        if len(parsed) == 2:
+            (resource, id) = parsed
+            
+            if resource == "entries":
+                if id is not None:
+                    response = f"{get_single_entry(id)}"
+                else:
+                    response = f"{get_all_entries()}"
+            if resource == "moods":
+                if id is not None:
+                    response = f"{get_single_mood(id)}"
+                else:
+                    response = f"{get_all_moods()}"
+            self.wfile.write(response.encode())
+        
+        elif len(parsed) == 3:
+            (resource, id, value) = parsed
+            if resource == "entries":
+                response = search_entries(value)
+            self.wfile.write(response.encode())
                 
 
         # This weird code sends a response back to the client
-        self.wfile.write(response.encode())
 
     # Here's a method on the class that overrides the parent's method.
     # It handles any POST request.
