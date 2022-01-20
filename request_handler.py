@@ -1,5 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from views import get_all_entries, get_single_entry
+from views import delete_entry
 
 
 # Here's a class. It inherits from another class.
@@ -100,6 +101,24 @@ class HandleRequests(BaseHTTPRequestHandler):
         """Handles PUT requests to the server
         """
         self.do_POST()
+        
+    def do_DELETE(self):
+        """Handles DELETE requests to the server
+        """
+
+        # Set a 204 response code
+        self._set_headers(204)
+
+        # Parse the URL
+        (resource, id) = self.parse_url(self.path)
+
+        # Delete a single animal from the list
+        if resource == "entries":
+            delete_entry(id)
+
+        # Encode the new animal and send in response
+        self.wfile.write("".encode())
+
 
 
 # This function is not inside the class. It is the starting
