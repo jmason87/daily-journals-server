@@ -1,7 +1,6 @@
 import sqlite3
 import json
-from models import Entry
-from models.mood import Mood
+from models import Entry, Mood
 
 # ENTRIES = [
 #     {
@@ -136,4 +135,24 @@ def create_entry(new_entry):
         id = db_cursor.lastrowid
         new_entry['id'] = id
     
-    return json.dumps(new_entry)  
+    return json.dumps(new_entry)
+
+def update_entry(id, new_entry):
+    with sqlite3.connect("./dailyjournal.sqlite3") as conn:
+        db_cursor = conn.cursor()
+        db_cursor.execute("""
+        UPDATE Entries
+            SET
+                concept = ?,
+                entry = ?,
+                date = ?,
+                mood_id = ?
+        WHERE id = ?
+        """, (new_entry['concept'], new_entry['entry'], new_entry['date'], new_entry['mood_id'], id, ))
+
+        rows_affected = db_cursor.rowcount
+        
+    if rows_affected == 0:
+        return False
+    else:
+        return True
