@@ -46,11 +46,23 @@ def get_all_entries():
         dataset = db_cursor.fetchall()
         
         for row in dataset:
-            entry = Entry(row['id'], row['concept'], row['entry'], row['date'], row['mood_id'])
+            entry = Entry(row['id'], row['concept'], row['entry'], row['date'], row['mood_id'], [])
             mood = Mood(row['id'], row['label'])
             entry.mood = mood.__dict__
             entries.append(entry.__dict__)
             
+            db_cursor.execute("""
+            SELECT t.id, t.name
+            FROM Entries e
+            join Entrytag et on e.id = et.entry_id
+            join Tag t on t.id = et.tag_id
+            WHERE et.entry_id = ?
+            """, (entry.id,)) 
+            
+            tagset = db_cursor.fetchall()
+            for tag_data in tagset:
+                tag = {'id': tag_data['id'], 'name': tag_data['name']}
+                entry.tags.append(tag)
     
     return json.dumps(entries)
 
@@ -134,6 +146,13 @@ def create_entry(new_entry):
         
         id = db_cursor.lastrowid
         new_entry['id'] = id
+        
+        for tag in new_entry['tags']:
+            db_cursor.execute("""
+            INSERT INTO Entrytag
+                (entry_id, tag_id)
+                VALUES (?, ?)
+            """, (id, tag))
     
     return json.dumps(new_entry)
 
